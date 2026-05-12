@@ -11,10 +11,18 @@ export function activate(context: vscode.ExtensionContext) {
     secretService,
   );
 
+  context.subscriptions.push(secretService);
+
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
       SidebarProvider.viewId,
       sidebarProvider,
+    ),
+  );
+
+  context.subscriptions.push(
+    secretService.onKeyStatusChange((configured) =>
+      sidebarProvider.updateKeyStatus(configured),
     ),
   );
 
@@ -42,7 +50,6 @@ export function activate(context: vscode.ExtensionContext) {
       "git-commit-assist.removeApiKey",
       async () => {
         await secretService.deleteApiKey();
-        sidebarProvider.updateKeyStatus(false);
         vscode.window.showInformationMessage(
           "Git Commit Assist: API key removed.",
         );
