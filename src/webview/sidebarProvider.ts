@@ -169,8 +169,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
   }
 
   private async refreshKeyStatus(): Promise<void> {
-    const key = await this.secretService.getApiKey();
-    this.updateKeyStatus(!!key);
+    const configured = await this.secretService.isConfigured();
+    this.updateKeyStatus(configured);
   }
 
   private async setWebviewHtml(webview: vscode.Webview): Promise<void> {
