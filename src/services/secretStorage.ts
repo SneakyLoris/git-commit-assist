@@ -2,26 +2,8 @@ import * as vscode from "vscode";
 
 const API_KEY_SECRET = "git-commit-assist.apiKey";
 
-export class SecretStorageService implements vscode.Disposable {
-  private readonly _onKeyStatusChange = new vscode.EventEmitter<boolean>();
-  public readonly onKeyStatusChange: vscode.Event<boolean> =
-    this._onKeyStatusChange.event;
-
-  private readonly _changeSubscription: vscode.Disposable;
-
-  constructor(private readonly secrets: vscode.SecretStorage) {
-    this._changeSubscription = secrets.onDidChange(({ key }) => {
-      if (key === API_KEY_SECRET) {
-        void this.isConfigured().then((configured) =>
-          this._onKeyStatusChange.fire(configured),
-        );
-      }
-    });
-  }
-
-  async isConfigured(): Promise<boolean> {
-    return (await this.secrets.get(API_KEY_SECRET)) !== undefined;
-  }
+export class SecretStorageService {
+  constructor(private readonly secrets: vscode.SecretStorage) {}
 
   async getApiKey(): Promise<string | undefined> {
     return this.secrets.get(API_KEY_SECRET);
@@ -42,35 +24,24 @@ export class SecretStorageService implements vscode.Disposable {
     }
 
     const key = await vscode.window.showInputBox({
-      title: "Git Commit Assist — API Key",
-      prompt:
-        "Enter your ProxyAPI key. Get one at proxyapi.ru if you don't have it.",
+      title: "API Key",
+      prompt: "Enter your ProxyAPI key for Gemini to enable code review",
       password: true,
-      placeHolder: "sk-...",
+      placeHolder: "Enter API key...",
       ignoreFocusOut: true,
       validateInput: (value) => {
         if (!value.trim()) {
           return "API key cannot be empty";
-        }
-        if (value.trim().length < 10) {
-          return "API key looks too short — double-check it";
         }
         return undefined;
       },
     });
 
     if (key) {
-      const trimmed = key.trim();
-      await this.storeApiKey(trimmed);
-      vscode.window.showInformationMessage("Git Commit Assist: API key saved.");
-      return trimmed;
+      await this.storeApiKey(key.trim());
+      return key.trim();
     }
 
     return undefined;
-  }
-
-  dispose(): void {
-    this._changeSubscription.dispose();
-    this._onKeyStatusChange.dispose();
   }
 }
