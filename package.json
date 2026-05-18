@@ -42,6 +42,38 @@
           "name": "Git Commit Assist"
         }
       ]
+    },
+    "configuration": {
+      "title": "Git Commit Assist",
+      "properties": {
+        "gitCommitAssist.model": {
+          "type": "string",
+          "default": "gemini-3.1-flash-lite-preview",
+          "markdownDescription": "Gemini model identifier used for AI review generation. Must be a model name supported by your API provider."
+        },
+        "gitCommitAssist.maxOutputTokens": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "markdownDescription": "Maximum number of tokens in the AI response. Set to `0` to use the model's default limit."
+        },
+        "gitCommitAssist.context7Enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Fetch live library documentation from Context7 to enrich AI review context. Disable to skip the network lookup."
+        },
+        "gitCommitAssist.responseLanguage": {
+          "type": "string",
+          "default": "Russian",
+          "enum": ["Russian", "English"],
+          "description": "Language for the AI-generated code review response."
+        },
+        "gitCommitAssist.docsDirectory": {
+          "type": "string",
+          "default": "docs/**/*.md",
+          "markdownDescription": "Glob pattern for Markdown documentation files relative to the workspace root. Used when **Include Markdown context** is enabled in the sidebar."
+        }
+      }
     }
   },
   "scripts": {
