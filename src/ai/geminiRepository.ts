@@ -1,5 +1,5 @@
 const BASE_URL = "https://api.proxyapi.ru/google";
-const MODEL = "gemini-3.1-flash-lite-preview";
+const DEFAULT_MODEL = "gemini-3.1-flash-lite-preview";
 
 interface GenerateContentResponse {
   text?: string;
@@ -10,6 +10,7 @@ interface GeminiClient {
     generateContent(options: {
       model: string;
       contents: string;
+      config?: { maxOutputTokens?: number };
     }): Promise<GenerateContentResponse>;
   };
 }
@@ -25,7 +26,11 @@ async function createClient(apiKey: string): Promise<GeminiClient> {
 export class GeminiRepository {
   private clientPromise: Promise<GeminiClient>;
 
-  constructor(apiKey: string) {
+  constructor(
+    apiKey: string,
+    private readonly model: string = DEFAULT_MODEL,
+    private readonly maxOutputTokens?: number,
+  ) {
     this.clientPromise = createClient(apiKey);
   }
 
@@ -33,8 +38,11 @@ export class GeminiRepository {
     const client = await this.clientPromise;
     const response: GenerateContentResponse =
       await client.models.generateContent({
-        model: MODEL,
+        model: this.model,
         contents: prompt,
+        ...(this.maxOutputTokens !== undefined && {
+          config: { maxOutputTokens: this.maxOutputTokens },
+        }),
       });
 
     return response.text ?? "";
