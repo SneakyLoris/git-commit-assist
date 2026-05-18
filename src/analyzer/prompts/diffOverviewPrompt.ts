@@ -1,5 +1,34 @@
 import { DocumentationContext } from "../../models/types";
 
+interface LangStrings {
+  instruction: string;
+  sectionGood: string;
+  sectionBad: string;
+  sectionImprove: string;
+  noItems: string;
+}
+
+const LANG_STRINGS: Record<string, LangStrings> = {
+  Russian: {
+    instruction: "Ответ должен быть на русском языке.",
+    sectionGood: "## Что сделано хорошо",
+    sectionBad: "## Что сделано плохо",
+    sectionImprove: "## Что можно улучшить",
+    noItems: "- Явных пунктов не обнаружено.",
+  },
+  English: {
+    instruction: "The response must be in English.",
+    sectionGood: "## What was done well",
+    sectionBad: "## What was done poorly",
+    sectionImprove: "## What can be improved",
+    noItems: "- No clear points found.",
+  },
+};
+
+function getLangStrings(responseLanguage: string): LangStrings {
+  return LANG_STRINGS[responseLanguage] ?? LANG_STRINGS["Russian"];
+}
+
 function buildDocsContextBlock(docsContext: DocumentationContext[]): string {
   if (docsContext.length === 0) {
     return "Контекст документации Context7 не найден или недоступен.";
@@ -25,11 +54,13 @@ export function buildDiffOverviewPrompt(
   compactedDiff: string,
   docsContext: DocumentationContext[] = [],
   markdownContext = "",
+  responseLanguage = "Russian",
 ): string {
   const docsBlock = buildDocsContextBlock(docsContext);
   const markdownBlock = markdownContext.trim()
     ? markdownContext
     : "Markdown контекст не был добавлен.";
+  const lang = getLangStrings(responseLanguage);
 
   return `Ты — опытный code reviewer.
 Твоя задача: проанализировать git diff и дать краткий, практический обзор изменений.
@@ -42,15 +73,15 @@ export function buildDiffOverviewPrompt(
 - Если есть контекст Context7, учитывай его как источник актуальных API и best practices.
 
 Требования к ответу:
-1) Ответ должен быть на русском языке.
+1) ${lang.instruction}
 2) Ответ должен быть в формате Markdown.
 3) Ответ должен содержать строго 3 раздела в таком порядке:
-   ## Что сделано хорошо
-   ## Что сделано плохо
-   ## Что можно улучшить
+   ${lang.sectionGood}
+   ${lang.sectionBad}
+   ${lang.sectionImprove}
 4) В каждом разделе используй маркированный список.
 5) Если для раздела нет содержательных пунктов, напиши:
-   - Явных пунктов не обнаружено.
+   ${lang.noItems}
 6) Пиши конкретно и по делу: отмечай качество кода, читаемость, риски, поддерживаемость, возможные баги.
 7) Для рекомендаций давай короткие, применимые шаги.
 
