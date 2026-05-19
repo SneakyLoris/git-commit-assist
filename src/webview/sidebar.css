@@ -364,6 +364,7 @@ button:focus {
 
 button.is-loading {
   opacity: 0.9;
+  cursor: progress;
 }
 
 .secondary-button {
